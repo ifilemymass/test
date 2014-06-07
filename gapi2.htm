@@ -1,0 +1,44 @@
+    <button id="authorize-button" style="visibility: hidden">Authorize</button>
+    <script type="text/javascript">
+      var clientId = '805397121676-1flt4t2q6bah3e4gh8a07r6bebcp8u46.apps.googleusercontent.com';
+      var apiKey = 'AIzaSyCw0cM0Fsi9_tkaxYY4D4ALjGLZrFiL7ts';
+      var scopes = 'https://www.googleapis.com/auth/plus.me';
+      function load() {
+        gapi.client.setApiKey(apiKey);
+        window.setTimeout(check,1);
+      }
+      function check() {
+        gapi.auth.authorize({client_id: clientId, scope: scopes, immediate: true}, result);
+      }
+      function result(authResult) {
+        var authorizeButton = document.getElementById('authorize-button');
+        if (authResult && !authResult.error) {
+          authorizeButton.style.visibility = 'hidden';
+          makeApiCall();
+        } else {
+          authorizeButton.style.visibility = '';
+          authorizeButton.onclick = click;
+        }
+      }
+      function click(event) {
+        gapi.auth.authorize({client_id: clientId, scope: scopes, immediate: false}, result);
+        return false;
+      }
+      function makeApiCall() {
+        gapi.client.load('plus', 'v1', function() {
+          var request = gapi.client.plus.people.get({
+            'userId': 'me'
+          });
+          request.execute(function(resp) {
+            var heading = document.createElement('h4');
+            var image = document.createElement('img');
+            image.src = resp.image.url;
+            heading.appendChild(image);
+            heading.appendChild(document.createTextNode(resp.displayName));
+            document.getElementById('content').appendChild(heading);
+          });
+        });
+      }
+    </script>
+    <script src="https://apis.google.com/js/client.js?onload=load"></script>
+    <div id="content"></div>
